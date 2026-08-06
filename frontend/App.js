@@ -13,6 +13,7 @@ import AddCarScreen from './src/screens/AddCarScreen';
 import AddMaintenanceScreen from './src/screens/AddMaintenanceScreen';
 import AlertsScreen from './src/screens/AlertsScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
+import EditProfileScreen from './src/screens/EditProfileScreen';
 import MaintenancePlanScreen from './src/screens/MaintenancePlanScreen';
 import SubscriptionScreen from './src/screens/SubscriptionScreen';
 import CarAssistantScreen from './src/screens/CarAssistantScreen';
@@ -59,6 +60,11 @@ const AppNavigator = () => {
         <Stack.Screen name="AddMaintenance" component={AddMaintenanceScreen} options={{ title: T.addMaint }} />
         <Stack.Screen name="Alerts"         component={AlertsScreen}         options={{ title: T.alerts }} />
         <Stack.Screen name="Settings"       component={SettingsScreen}       options={{ title: T.settings }} />
+        <Stack.Screen
+          name="EditProfile"
+          component={EditProfileScreen}
+          options={{ title: language === 'es' ? 'Mi Perfil' : 'My Profile' }}
+        />
         <Stack.Screen name="MaintenancePlan" component={MaintenancePlanScreen} options={{ title: T.maintPlan }} />
         <Stack.Screen
           name="Subscription"

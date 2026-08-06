@@ -36,7 +36,7 @@ const RegisterScreen = ({ navigation }) => {
     try {
       const response = await authService.register({ name, email, password });
       await AsyncStorage.setItem('token', response.data.token);
-      await AsyncStorage.setItem('user', JSON.stringify({ id: response.data.id, name: response.data.name, role: response.data.role }));
+      await AsyncStorage.setItem('user', JSON.stringify({ id: response.data.id, name: response.data.name, email: response.data.email, role: response.data.role }));
       navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
     } catch (err) {
       setError(err.response?.data?.error || t.failed);

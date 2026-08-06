@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { alertService, subscriptionService, requestService } from '../services/api';
 import AlertCard from '../components/AlertCard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Car, Bell, Settings, LogOut, ChevronRight, Wrench, AlertTriangle, ClipboardList, Star, Inbox, Users } from 'lucide-react-native';
+import { Car, Bell, Settings, LogOut, ChevronRight, Wrench, AlertTriangle, ClipboardList, Star, Inbox, Users, UserCircle } from 'lucide-react-native';
 import { SettingsContext } from '../context/SettingsContext';
 
 const HomeScreen = ({ navigation }) => {
@@ -100,6 +100,14 @@ const HomeScreen = ({ navigation }) => {
       onPress: () => navigation.navigate('MaintenancePlan'),
       iconBg: isDark ? 'rgba(34,197,94,0.12)' : 'rgba(22,163,74,0.08)',
       iconColor: '#16a34a',
+    },
+    {
+      icon: UserCircle,
+      label: language === 'es' ? 'Mi Perfil' : 'My Profile',
+      sub: language === 'es' ? 'Editar nombre y correo' : 'Edit name and email',
+      onPress: () => navigation.navigate('EditProfile'),
+      iconBg: isDark ? 'rgba(212,175,55,0.08)' : 'rgba(100,116,139,0.1)',
+      iconColor: colors.textSecondary,
     },
     {
       icon: Settings,

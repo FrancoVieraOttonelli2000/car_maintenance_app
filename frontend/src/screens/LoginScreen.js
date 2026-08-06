@@ -34,7 +34,7 @@ const LoginScreen = ({ navigation }) => {
     try {
       const response = await authService.login({ email, password });
       await AsyncStorage.setItem('token', response.data.token);
-      await AsyncStorage.setItem('user', JSON.stringify({ id: response.data.id, name: response.data.name, role: response.data.role }));
+      await AsyncStorage.setItem('user', JSON.stringify({ id: response.data.id, name: response.data.name, email: response.data.email, role: response.data.role }));
 
       // Managers don't have subscriptions to manage; skip the paywall entirely.
       let hasSubscription = true;

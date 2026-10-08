@@ -1,0 +1,2 @@
+ALTER TABLE cars
+  ADD COLUMN IF NOT EXISTS version VARCHAR(100) NULL AFTER current_km;

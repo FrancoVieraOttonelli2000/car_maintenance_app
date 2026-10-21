@@ -17,6 +17,19 @@ AutoControl permite a los clientes de un taller registrar sus coches, llevar el 
 
 Funciona en **Android** y en **web** con el mismo código.
 
+## Capturas
+
+<p align="center">
+  <img src="docs/screenshots/01-inicio.png" alt="Inicio del cliente" width="150" />
+  <img src="docs/screenshots/02-garaje.png" alt="Mi garaje" width="150" />
+  <img src="docs/screenshots/03-ficha.png" alt="Ficha del vehículo y plan de mantenimiento" width="150" />
+  <img src="docs/screenshots/04-anadir-vehiculo.png" alt="Añadir vehículo" width="150" />
+  <img src="docs/screenshots/05-avisos.png" alt="Avisos de mantenimiento" width="150" />
+  <img src="docs/screenshots/06-panel-gestor.png" alt="Panel del gestor" width="150" />
+</p>
+
+<p align="center"><sub>Inicio · Mi garaje · Ficha y plan de mantenimiento · Alta de vehículo · Avisos · Panel del gestor</sub></p>
+
 ## Funcionalidades
 
 - **Garaje del cliente**: alta de vehículos, actualización de kilometraje e historial de servicios.
@@ -24,6 +37,8 @@ Funciona en **Android** y en **web** con el mismo código.
 - **Avisos de mantenimiento**: qué está vencido o próximo, calculado a partir del último registro o del kilometraje con el que se dio de alta el coche.
 - **Fluidos recomendados** y ficha técnica de cada vehículo.
 - **Roles cliente / gestor** con flujo de aprobación: borrar un coche o cambiar datos de perfil crea una solicitud que un gestor aprueba o rechaza. La aprobación se ejecuta dentro de una transacción.
+- **Panel propio para el gestor**: resumen del taller (solicitudes pendientes, clientes, suscripciones activas, vehículos y servicios recientes) y aprobación o rechazo de solicitudes desde el propio inicio.
+- **Gestión de usuarios** para gestores: promover clientes a gestor y eliminar usuarios (clientes u otros gestores) junto con todos sus datos.
 - **Suscripción de pago con Stripe**, validada en el servidor (estado del pago, usuario, plan e importe) y con muro de pago aplicado en la API.
 - **Asistente con IA** (Claude API) para preguntas sobre el coche.
 

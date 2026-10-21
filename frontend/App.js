@@ -22,7 +22,7 @@ import CarAssistantScreen from './src/screens/CarAssistantScreen';
 import ManagerRequestsScreen from './src/screens/ManagerRequestsScreen';
 import ManagerUsersScreen from './src/screens/ManagerUsersScreen';
 import { navigationRef } from './src/navigation/navigationRef';
-import { authService, subscriptionService, saveUser } from './src/services/api';
+import { authService, subscriptionService, saveUser, clearSession } from './src/services/api';
 
 // La clave publicable de Stripe es pública por diseño (no es un secreto),
 // pero se puede cambiar sin tocar código con EXPO_PUBLIC_STRIPE_PK en frontend/.env
@@ -43,7 +43,7 @@ const resolveInitialRoute = async () => {
     return sub?.active ? 'Home' : 'Subscription';
   } catch (error) {
     if (error?.response?.status === 401) {
-      await AsyncStorage.multiRemove(['token', 'user']);
+      await clearSession();
       return 'Login';
     }
     // Sin conexión: se entra con los datos guardados. El servidor sigue

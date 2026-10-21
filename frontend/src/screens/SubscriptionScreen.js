@@ -6,8 +6,7 @@ import {
 import { useStripe } from '../utils/stripe-compat';
 import { Star, Check } from 'lucide-react-native';
 import { SettingsContext } from '../context/SettingsContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { subscriptionService } from '../services/api';
+import { subscriptionService, clearSession } from '../services/api';
 
 const PLANS = [
   {
@@ -124,7 +123,7 @@ export default function SubscriptionScreen({ navigation }) {
   const goHome = () => navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
 
   const handleLogout = async () => {
-    await AsyncStorage.multiRemove(['token', 'user']);
+    await clearSession();
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
 

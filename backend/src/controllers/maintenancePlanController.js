@@ -145,6 +145,50 @@ const getAlertas = async (req, res) => {
   }
 };
 
+// Estado de cada operación del plan de fábrica para un coche concreto
+// (con su historial). Devuelve [] si no hay plan para su marca/modelo/versión.
+// Lo usan la ficha del coche y los Avisos.
+const calcularPlanCoche = async (car) => {
+  const km = parseInt(car.current_km) || 0;
+  const baseKm = car.initial_km ?? 0;
+
+  const [rows] = await db.execute(
+    `SELECT * FROM (${DEDUP_BY_OPERACION}) deduped WHERE cada_km IS NOT NULL ORDER BY cada_km ASC`,
+    [car.brand, car.model, car.version]
+  );
+  if (!rows.length) return [];
+
+  const registros = await Maintenance.findLatestPlanRecords(car.id);
+
+  return rows.map(op => {
+    const ultimo = registros[op.operacion] || null;
+    const { proximoKm, kmRestantes, vencido: vencidoKm } = calcularVencimientoKm(op, km, {
+      ultimoKm: ultimo ? ultimo.km : null,
+      baseKm,
+    });
+    // Por tiempo solo se puede calcular si hay un registro con fecha.
+    const { proximaFecha, diasRestantes } = calcularVencimientoFecha(op, ultimo ? ultimo.date : null);
+    const vencidoFecha = diasRestantes !== null && diasRestantes <= 0;
+
+    const vencido = vencidoKm || vencidoFecha;
+    const urgente = vencido || kmRestantes <= 500 || (diasRestantes !== null && diasRestantes <= 7);
+    const alerta = urgente || kmRestantes <= 2000 || (diasRestantes !== null && diasRestantes <= 30);
+
+    return {
+      ...op,
+      proximoKm,
+      kmRestantes,
+      proximaFecha,
+      diasRestantes,
+      ultimoKm: ultimo ? ultimo.km : null,
+      ultimaFecha: ultimo ? ultimo.date : null,
+      vencido,
+      alerta,
+      urgente,
+    };
+  }).sort((a, b) => a.kmRestantes - b.kmRestantes);
+};
+
 const getAlertasByCar = async (req, res) => {
   try {
     const [cars] = await db.execute(
@@ -153,48 +197,7 @@ const getAlertasByCar = async (req, res) => {
     );
     if (!cars.length) return res.status(404).json({ error: 'Car not found' });
 
-    const { id: carId, brand, model, version, current_km, initial_km } = cars[0];
-    const km = parseInt(current_km) || 0;
-    const baseKm = initial_km ?? 0;
-
-    const [rows] = await db.execute(
-      `SELECT * FROM (${DEDUP_BY_OPERACION}) deduped WHERE cada_km IS NOT NULL ORDER BY cada_km ASC`,
-      [brand, model, version]
-    );
-
-    if (!rows.length) return res.json([]);
-
-    const registros = await Maintenance.findLatestPlanRecords(carId);
-
-    const result = rows.map(op => {
-      const ultimo = registros[op.operacion] || null;
-      const { proximoKm, kmRestantes, vencido: vencidoKm } = calcularVencimientoKm(op, km, {
-        ultimoKm: ultimo ? ultimo.km : null,
-        baseKm,
-      });
-      // Por tiempo solo se puede calcular si hay un registro con fecha.
-      const { proximaFecha, diasRestantes } = calcularVencimientoFecha(op, ultimo ? ultimo.date : null);
-      const vencidoFecha = diasRestantes !== null && diasRestantes <= 0;
-
-      const vencido = vencidoKm || vencidoFecha;
-      const urgente = vencido || kmRestantes <= 500 || (diasRestantes !== null && diasRestantes <= 7);
-      const alerta = urgente || kmRestantes <= 2000 || (diasRestantes !== null && diasRestantes <= 30);
-
-      return {
-        ...op,
-        proximoKm,
-        kmRestantes,
-        proximaFecha,
-        diasRestantes,
-        ultimoKm: ultimo ? ultimo.km : null,
-        ultimaFecha: ultimo ? ultimo.date : null,
-        vencido,
-        alerta,
-        urgente,
-      };
-    }).sort((a, b) => a.kmRestantes - b.kmRestantes);
-
-    res.json(result);
+    res.json(await calcularPlanCoche(cars[0]));
   } catch (err) {
     console.error('getAlertasByCar error:', err);
     res.status(500).json({ error: 'Error al calcular las alertas del vehículo' });
@@ -214,4 +217,4 @@ const getMotorizacion = async (req, res) => {
   }
 };
 
-module.exports = { getMarcas, getModelos, getVersiones, getPlan, getAlertas, getMotorizacion, getAlertasByCar, calcularVencimientoKm };
+module.exports = { getMarcas, getModelos, getVersiones, getPlan, getAlertas, getMotorizacion, getAlertasByCar, calcularVencimientoKm, calcularPlanCoche };

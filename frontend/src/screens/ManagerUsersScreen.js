@@ -1,8 +1,10 @@
 import React, { useState, useCallback, useContext } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { managerService } from '../services/api';
-import { Users, ShieldCheck } from 'lucide-react-native';
+import { Users, ShieldCheck, Trash2 } from 'lucide-react-native';
+import { confirmAction, showMessage } from '../utils/dialogs';
 import { SettingsContext } from '../context/SettingsContext';
 
 const ManagerUsersScreen = () => {
@@ -10,11 +12,14 @@ const ManagerUsersScreen = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [promotingId, setPromotingId] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const { colors, language } = useContext(SettingsContext);
 
   const t = {
     title:       language === 'es' ? 'Usuarios'                                : 'Users',
-    subtitle:    language === 'es' ? 'Consultá usuarios y promové gestores'    : 'View users and promote managers',
+    subtitle:    language === 'es' ? 'Consulta, promueve o elimina usuarios'   : 'View, promote or delete users',
+    you:         language === 'es' ? 'Tú'                                      : 'You',
     manager:     language === 'es' ? 'Gestor'                                  : 'Manager',
     client:      language === 'es' ? 'Cliente'                                 : 'Client',
     promote:     language === 'es' ? 'Promover a gestor'                       : 'Promote to manager',
@@ -22,6 +27,11 @@ const ManagerUsersScreen = () => {
     confirmMsg:  (email) => language === 'es'
       ? `¿Convertir a ${email} en gestor? Va a poder aprobar solicitudes y promover a otros usuarios.`
       : `Make ${email} a manager? They'll be able to approve requests and promote other users.`,
+    deleteTitle: language === 'es' ? 'Eliminar usuario'                        : 'Delete user',
+    deleteMsg:   (user) => language === 'es'
+      ? `¿Eliminar a ${user.name || user.email} (${user.email})? Se borrarán también sus vehículos, su historial de mantenimiento, sus solicitudes y su suscripción. No se puede deshacer.`
+      : `Delete ${user.name || user.email} (${user.email})? Their vehicles, maintenance history, requests and subscription will also be deleted. This can't be undone.`,
+    deleteBtn:   language === 'es' ? 'Eliminar'                                : 'Delete',
     cancel:      language === 'es' ? 'Cancelar'                                : 'Cancel',
     confirm:     language === 'es' ? 'Confirmar'                               : 'Confirm',
     errorTitle:  language === 'es' ? 'Error'                                   : 'Error',
@@ -31,6 +41,9 @@ const ManagerUsersScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
+      AsyncStorage.getItem('user')
+        .then((raw) => setCurrentUserId(raw ? JSON.parse(raw).id : null))
+        .catch(() => {});
       fetchUsers();
     }, [])
   );
@@ -59,17 +72,44 @@ const ManagerUsersScreen = () => {
       fetchUsers();
     } catch (error) {
       const msg = error?.response?.data?.error || error?.message || 'Error desconocido';
-      Alert.alert(t.errorTitle, msg);
+      showMessage(t.errorTitle, msg);
     } finally {
       setPromotingId(null);
     }
   };
 
   const confirmPromote = (user) => {
-    Alert.alert(t.confirmTitle, t.confirmMsg(user.email), [
-      { text: t.cancel, style: 'cancel' },
-      { text: t.confirm, onPress: () => promote(user) },
-    ]);
+    confirmAction({
+      title: t.confirmTitle,
+      message: t.confirmMsg(user.email),
+      confirmText: t.confirm,
+      cancelText: t.cancel,
+      onConfirm: () => promote(user),
+    });
+  };
+
+  const removeUser = async (user) => {
+    setDeletingId(user.id);
+    try {
+      await managerService.deleteUser(user.id);
+      setUsers((prev) => prev.filter((u) => u.id !== user.id));
+    } catch (error) {
+      const msg = error?.response?.data?.error || error?.message || 'Error desconocido';
+      showMessage(t.errorTitle, msg);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const confirmDelete = (user) => {
+    confirmAction({
+      title: t.deleteTitle,
+      message: t.deleteMsg(user),
+      confirmText: t.deleteBtn,
+      cancelText: t.cancel,
+      destructive: true,
+      onConfirm: () => removeUser(user),
+    });
   };
 
   const renderEmptyComponent = () => {
@@ -85,7 +125,7 @@ const ManagerUsersScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <View style={[styles.iconContainer, { backgroundColor: 'rgba(100,116,139,0.1)' }]}>
+        <View style={[styles.iconContainer, { backgroundColor: colors.primarySoft }]}>
           <Users size={32} color={colors.textSecondary} />
         </View>
         <View style={styles.headerTextContainer}>
@@ -97,16 +137,20 @@ const ManagerUsersScreen = () => {
       <FlatList
         data={users}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
+        renderItem={({ item }) => {
+          const isMe = item.id === currentUserId;
+          return (
           <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
             <View style={styles.cardText}>
-              <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
+              <Text style={[styles.name, { color: colors.text }]}>
+                {item.name}{isMe ? ` (${t.you})` : ''}
+              </Text>
               <Text style={[styles.email, { color: colors.textSecondary }]}>{item.email}</Text>
             </View>
             {item.role === 'manager' ? (
-              <View style={[styles.roleBadge, { backgroundColor: 'rgba(212,175,55,0.12)' }]}>
-                <ShieldCheck size={14} color="#eab308" />
-                <Text style={[styles.roleText, { color: '#eab308' }]}>{t.manager}</Text>
+              <View style={[styles.roleBadge, { backgroundColor: colors.primarySoft }]}>
+                <ShieldCheck size={14} color={colors.primary} />
+                <Text style={[styles.roleText, { color: colors.primary }]}>{t.manager}</Text>
               </View>
             ) : (
               <TouchableOpacity
@@ -117,8 +161,19 @@ const ManagerUsersScreen = () => {
                 <Text style={[styles.promoteText, { color: colors.primary }]}>{t.promote}</Text>
               </TouchableOpacity>
             )}
+            {!isMe && (
+              <TouchableOpacity
+                onPress={() => confirmDelete(item)}
+                disabled={deletingId === item.id}
+                accessibilityLabel={t.deleteTitle}
+                style={[styles.deleteBtn, { borderColor: colors.border, opacity: deletingId === item.id ? 0.5 : 1 }]}
+              >
+                <Trash2 size={18} color={colors.danger || '#ef4444'} />
+              </TouchableOpacity>
+            )}
           </View>
-        )}
+          );
+        }}
         contentContainerStyle={styles.listContainer}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
@@ -171,6 +226,11 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
   },
   promoteText: { fontSize: 12, fontWeight: '700' },
+  deleteBtn: {
+    padding: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
   emptyContainer: {
     padding: 32,
     borderRadius: 16,

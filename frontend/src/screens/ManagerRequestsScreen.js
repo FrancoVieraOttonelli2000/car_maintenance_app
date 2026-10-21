@@ -122,7 +122,7 @@ const ManagerRequestsScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <View style={[styles.iconContainer, { backgroundColor: 'rgba(29,78,216,0.08)' }]}>
+        <View style={[styles.iconContainer, { backgroundColor: colors.primarySoft }]}>
           <Inbox size={32} color={colors.primary} />
         </View>
         <View style={styles.headerTextContainer}>
@@ -142,7 +142,7 @@ const ManagerRequestsScreen = () => {
               statusTab === tab && { backgroundColor: colors.primary, borderColor: colors.primary },
             ]}
           >
-            <Text style={[styles.tabText, { color: statusTab === tab ? '#ffffff' : colors.textSecondary }]}>
+            <Text style={[styles.tabText, { color: statusTab === tab ? colors.onPrimary : colors.textSecondary }]}>
               {tab === 'pending' ? t.pending : t.all}
             </Text>
           </TouchableOpacity>

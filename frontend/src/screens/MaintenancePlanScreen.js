@@ -223,7 +223,7 @@ export default function MaintenancePlanScreen({ route }) {
                   size={14}
                   color={
                     selectedMarca === c.brand && selectedModelo === c.model
-                      ? '#fff'
+                      ? colors.onPrimary
                       : colors.primary
                   }
                 />
@@ -233,7 +233,7 @@ export default function MaintenancePlanScreen({ route }) {
                     {
                       color:
                         selectedMarca === c.brand && selectedModelo === c.model
-                          ? '#fff'
+                          ? colors.onPrimary
                           : colors.text,
                     },
                   ]}

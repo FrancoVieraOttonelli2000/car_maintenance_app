@@ -90,7 +90,7 @@ const MyCarsScreen = ({ navigation }) => {
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('AddCar')}>
             <View style={[styles.addButton, { backgroundColor: colors.primary, shadowColor: colors.primary }]}>
-              <Plus size={20} color="#ffffff" />
+              <Plus size={20} color={colors.onPrimary} />
             </View>
           </TouchableOpacity>
         </View>

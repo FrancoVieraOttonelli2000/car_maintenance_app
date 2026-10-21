@@ -8,15 +8,23 @@ const AlertCard = ({ alert }) => {
   const navigation = useNavigation();
   const { colors, language } = useContext(SettingsContext);
 
-  const btnText = language === 'es' ? 'Registrar servicio' : 'Record Service';
-  const alertMessage = language === 'es'
-    ? `Toca revisar: ${alert.type_name}. Llevas ${alert.overdue_km} km de retraso.`
-    : `Time for ${alert.type_name}. Overdue by ${alert.overdue_km} km.`;
+  const es = language === 'es';
+  // Los avisos del plan de fábrica se resuelven desde la ficha del coche
+  // ("Registrar como hecho"); los genéricos, con el formulario de servicio.
+  const isPlan = alert.source === 'plan';
+  const btnText = isPlan ? (es ? 'Ver en la ficha' : 'Open vehicle') : (es ? 'Registrar servicio' : 'Record Service');
+  const fmt = (n) => Number(n).toLocaleString(es ? 'es-ES' : 'en-GB');
+  const alertMessage = alert.overdue_km !== null && alert.overdue_km !== undefined
+    ? (es ? `Llevas ${fmt(alert.overdue_km)} km de retraso.` : `Overdue by ${fmt(alert.overdue_km)} km.`)
+    : (es ? `Vencido hace ${alert.overdue_days} días.` : `Overdue by ${alert.overdue_days} days.`);
+  const onPress = () => (isPlan
+    ? navigation.navigate('CarDetails', { id: alert.car_id })
+    : navigation.navigate('AddMaintenance', { id: alert.car_id }));
 
   return (
     <TouchableOpacity
       activeOpacity={0.85}
-      onPress={() => navigation.navigate('AddMaintenance', { id: alert.car_id })}
+      onPress={onPress}
       style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
     >
       <View style={[styles.accentBar, { backgroundColor: colors.danger }]} />

@@ -23,6 +23,21 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
+// Avisos de cambio de usuario (login, refresco, cierre de sesión). Los usa
+// SettingsContext para cambiar los colores según el rol.
+const userListeners = new Set();
+export const onUserChange = (fn) => {
+  userListeners.add(fn);
+  return () => userListeners.delete(fn);
+};
+const notifyUser = (user) => userListeners.forEach((fn) => fn(user));
+
+// Cierra la sesión en el móvil.
+export const clearSession = async () => {
+  await AsyncStorage.multiRemove(['token', 'user']);
+  notifyUser(null);
+};
+
 // Respuestas globales:
 // - 401: el token caducó o el usuario ya no existe -> cerrar sesión.
 // - 402: no hay suscripción activa -> pantalla de suscripción.
@@ -35,7 +50,7 @@ api.interceptors.response.use(
     const isAuthCall = url.startsWith('/auth/login') || url.startsWith('/auth/register');
 
     if (status === 401 && !isAuthCall) {
-      await AsyncStorage.multiRemove(['token', 'user']);
+      await clearSession();
       resetTo('Login');
     } else if (status === 402) {
       resetTo('Subscription');
@@ -52,9 +67,9 @@ export const authService = {
 
 // Guarda en el móvil los datos básicos del usuario (los que usan las pantallas).
 export const saveUser = async (data) => {
-  await AsyncStorage.setItem('user', JSON.stringify({
-    id: data.id, name: data.name, email: data.email, role: data.role,
-  }));
+  const user = { id: data.id, name: data.name, email: data.email, role: data.role };
+  await AsyncStorage.setItem('user', JSON.stringify(user));
+  notifyUser(user);
 };
 
 export const carService = {
@@ -81,8 +96,10 @@ export const subscriptionService = {
 };
 
 export const managerService = {
+  getStats: () => api.get('/managers/stats'),
   listUsers: () => api.get('/managers/users'),
   promote: (email) => api.post('/managers/promote', { email }),
+  deleteUser: (id) => api.delete(`/managers/users/${id}`),
 };
 
 export const requestService = {

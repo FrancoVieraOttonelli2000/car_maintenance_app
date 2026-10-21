@@ -98,11 +98,11 @@ const CarDetailsScreen = ({ route, navigation }) => {
       {/* Vehicle header card */}
       <View style={[styles.heroCard, { backgroundColor: colors.primary }]}>
         <View style={styles.heroIconWrap}>
-          <Car size={36} color="#ffffff" />
+          <Car size={36} color={colors.onPrimary} />
         </View>
         <View style={styles.heroText}>
-          <Text style={styles.heroBrand}>{car.brand} {car.model}</Text>
-          <Text style={styles.heroPlate}>{car.plate}</Text>
+          <Text style={[styles.heroBrand, { color: colors.onPrimary }]}>{car.brand} {car.model}</Text>
+          <Text style={[styles.heroPlate, { color: colors.onPrimary }]}>{car.plate}</Text>
         </View>
       </View>
 
@@ -189,7 +189,7 @@ const CarDetailsScreen = ({ route, navigation }) => {
             style={styles.addBtn}
             onPress={() => navigation.navigate('AddMaintenance', { id: car.id })}
           >
-            <Plus size={15} color="#fff" /> {language === 'es' ? 'Añadir' : 'Add'}
+            <Plus size={15} color={colors.onPrimary} /> {language === 'es' ? 'Añadir' : 'Add'}
           </ButtonPrimary>
         </View>
 
@@ -304,8 +304,8 @@ const CarDetailsScreen = ({ route, navigation }) => {
         })}
         activeOpacity={0.85}
       >
-        <Zap size={18} color="#fff" />
-        <Text style={styles.assistantBtnText}>
+        <Zap size={18} color={colors.onPrimary} />
+        <Text style={[styles.assistantBtnText, { color: colors.onPrimary }]}>
           {language === 'es' ? 'Ficha técnica del vehículo' : 'Vehicle specs'}
         </Text>
       </TouchableOpacity>
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
   },
   heroText: { flex: 1 },
   heroBrand: { fontSize: 22, fontWeight: '800', color: '#ffffff', marginBottom: 4 },
-  heroPlate: { fontSize: 14, fontWeight: '700', color: 'rgba(255,255,255,0.75)', letterSpacing: 1.5 },
+  heroPlate: { fontSize: 14, fontWeight: '700', color: 'rgba(255,255,255,0.75)', letterSpacing: 1.5, opacity: 0.8 },
   card: {
     borderRadius: 14,
     borderWidth: 1,

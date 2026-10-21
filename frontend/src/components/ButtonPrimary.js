@@ -21,7 +21,9 @@ const ButtonPrimary = ({ children, onPress, disabled = false, variant = 'primary
     >
       <Text style={[
         styles.text,
-        variant === 'outline' ? { color: colors.primary } : { color: '#ffffff' },
+        variant === 'outline' ? { color: colors.primary }
+          : variant === 'danger' ? { color: '#ffffff' }
+          : { color: colors.onPrimary },
       ]}>
         {children}
       </Text>

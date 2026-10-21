@@ -12,6 +12,9 @@ Claude.
 ## Componentes
 
 - **Frontend** — React Native (Expo), navegación con `@react-navigation/native-stack`.
+  La pantalla de inicio (`HomeScreen`) muestra un panel distinto según el rol:
+  `ManagerHomeScreen` (resumen, solicitudes pendientes con aprobar/rechazar,
+  gestión) para gestores y `ClientHomeScreen` (garaje, avisos, plan) para clientes.
   Guarda el JWT y los datos básicos del usuario (`id`, `name`, `email`, `role`)
   en `AsyncStorage` tras el login/registro.
 - **Backend** — Node.js / Express. Autenticación con JWT (`jsonwebtoken` +
@@ -40,6 +43,13 @@ graph LR
 - El primer gestor se promueve a mano en la base de datos (`UPDATE users SET
   role = 'manager' WHERE email = '...'`). A partir de ahí, cualquier gestor
   puede promover a otros usuarios vía `POST /api/managers/promote`.
+- Un gestor puede borrar a cualquier usuario, cliente o gestor, con
+  `DELETE /api/managers/users/:id`, pero no a sí mismo (así nunca se queda la
+  app sin gestores). El borrado se hace en una transacción: historial y km de
+  sus coches, coches, sus solicitudes, pagos, suscripción y el usuario. Las
+  solicitudes de otros usuarios que hubiera resuelto se conservan con
+  `resolved_by = NULL`. Su token deja de valer al momento, porque `protect`
+  ya no lo encuentra en la base de datos.
 - El JWT incluye `{ id, role }`, pero el middleware `protect` vuelve a cargar
   el usuario desde la base de datos en cada petición: el rol que cuenta es
   siempre el actual (una promoción vale al momento y un usuario borrado deja
@@ -209,6 +219,11 @@ Un registro de `maintenance` es de un tipo genérico (`type_id`) o de una
 operación del plan (`plan_operacion`), nunca de los dos. En la ficha del
 coche, cada operación del plan tiene un botón "Registrar como hecho".
 
+La pantalla Avisos (`/api/alerts`) y los inicios de cliente y gestor usan el
+plan de fábrica cuando el coche lo tiene (las operaciones vencidas, lo mismo
+que muestra la ficha) y los tipos genéricos solo para coches sin plan. Así el
+inicio nunca dice "todo al día" mientras la ficha tiene operaciones vencidas.
+
 Cálculo de cuándo toca algo:
 
 - Si hay registro: el último km registrado + el intervalo (y, si la operación
@@ -241,7 +256,9 @@ Cálculo de cuándo toca algo:
 | POST | `/api/requests/:id/approve` | gestor | ejecuta el cambio real, en transacción |
 | POST | `/api/requests/:id/reject` | gestor | solo cambia estado, no ejecuta nada |
 | POST | `/api/managers/promote` | gestor | promueve a otro usuario por email |
+| GET | `/api/managers/stats` | gestor | cifras del panel: usuarios, suscripciones activas, coches, solicitudes, servicios |
 | GET | `/api/managers/users` | gestor | lista todos los usuarios |
+| DELETE | `/api/managers/users/:id` | gestor | borra un cliente u otro gestor con todos sus datos; no a sí mismo |
 
 ## Decisiones y trade-offs
 

@@ -27,3 +27,12 @@ Thumbs.db
 # Editor
 .idea/
 .vscode/
+
+# Copias de seguridad y carpetas locales
+frontend/android_backup/
+.claude/
+
+# Android (además de frontend/android/.gitignore)
+frontend/android/.kotlin/
+*.keystore
+!debug.keystore

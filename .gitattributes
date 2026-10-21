@@ -1,0 +1,9 @@
+# Los scripts de Windows necesitan saltos de línea CRLF para funcionar.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+# El resto, LF.
+* text=auto eol=lf
+*.png binary
+*.webp binary
+*.jar binary
+*.keystore binary

@@ -1,4 +1,4 @@
-package com.anonymous.carmaintenanceapp
+package com.autocontrol.app
 
 import android.app.Application
 import android.content.res.Configuration

@@ -87,7 +87,7 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.anonymous.carmaintenanceapp'
+    namespace 'com.autocontrol.app'
     defaultConfig {
         applicationId 'com.autocontrol.app'
         minSdkVersion rootProject.ext.minSdkVersion
